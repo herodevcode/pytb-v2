@@ -7,6 +7,11 @@ from datetime import time, timedelta
 ## pip install -r requirements.txt
 ## streamlit run main.py
 
+def time_to_seconds(time_obj):
+    return time_obj.hour * 3600 + time_obj.minute * 60 + time_obj.second
+
+
+
 def download_video(url, output_path, start_time=None, end_time=None, video_title=None):
     yt = pytube.YouTube(url)
     video = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first()
@@ -58,7 +63,9 @@ if __name__ == '__main__':
         start_time = st.time_input("Start Time (HH:MM:SS)", value=default_start_time)
         end_time = st.time_input("End Time (HH:MM:SS)", value=default_end_time)
         video_title = st.text_input('Video Title (optional)')
-
+        start_seconds = time_to_seconds(start_time)
+        end_seconds = time_to_seconds(end_time)
+    
     if url and (not use_timestamps or (start_time and end_time)):
         output_path = 'videos' 
         os.makedirs(output_path, exist_ok=True)
