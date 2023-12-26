@@ -9,34 +9,37 @@ from datetime import time, timedelta
 
 def download_video(url, output_path, start_time=None, end_time=None, video_title=None):
     yt = pytube.YouTube(url)
-    video = yt.streams.get_highest_resolution()
+    video = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first()
     
     if video_title is None:
-        video_title = yt.title
+        video_title = yt.title.replace('/', '_').replace('\\', '_')  # Replace invalid filename characters
     final_output_filename = f"{video_title}.mp4"
     final_output_file = os.path.join(output_path, final_output_filename)
 
+    temp_output_file = os.path.join(output_path, video.default_filename)
+    video.download(output_path=output_path) 
+
     if start_time is not None and end_time is not None:
-        temp_output_file = os.path.join(output_path, video.default_filename)
-        video.download(output_path=output_path) 
-
         # Convert time objects to seconds
-        start_seconds = start_time.hour * 3600 + start_time.minute * 60 + start_time.second
-        end_seconds = end_time.hour * 3600 + end_time.minute * 60 + end_time.second
+        start_seconds = time_to_seconds(start_time)
+        end_seconds = time_to_seconds(end_time)
 
-        # Load the video clip to get its duration
+        # Load the video clip to get its duration and ensure we're within bounds
         with VideoFileClip(temp_output_file) as video_clip:
-            if end_seconds > video_clip.duration:
-                end_seconds = video_clip.duration  # Adjust end time if it exceeds the video duration
+            if start_seconds < 0 or end_seconds < 0:
+                raise ValueError("Start time and end time must be positive.")
+            if start_seconds >= video_clip.duration or end_seconds > video_clip.duration:
+                raise ValueError("Start time and end time must be within the video duration.")
             if start_seconds >= end_seconds:
-                raise ValueError("Start time must be less than end time and within the video duration.")
-            
+                raise ValueError("Start time must be less than end time.")
+
             video_segment = video_clip.subclip(start_seconds, end_seconds)
             video_segment.write_videofile(final_output_file, codec="libx264", audio_codec="aac")
 
         os.remove(temp_output_file)  # Remove the original, full-length video
     else:
-        video.download(filename=final_output_filename, output_path=output_path) 
+        # If no start and end times are provided, simply move the downloaded file to the final destination
+        os.rename(temp_output_file, final_output_file)
 
     return final_output_file
 
