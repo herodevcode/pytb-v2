@@ -1,6 +1,5 @@
 import os
 import pytube
-import streamlit as st
 from moviepy.editor import VideoFileClip
 from datetime import time
 
@@ -26,14 +25,18 @@ def download_video(url, output_path, start_time=None, end_time=None, video_title
         end_seconds = time_to_seconds(end_time)
         
         with VideoFileClip(temp_output_file) as video_clip:
+            print(f"Video duration: {video_clip.duration}")
+            print(f"Start seconds: {start_seconds}")
+            print(f"End seconds: {end_seconds}")
+            
             if start_seconds < 0 or end_seconds < 0:
-                st.error("Start time and end time must be positive.")
+                print("Start time and end time must be positive.")
                 return None
             if start_seconds >= video_clip.duration or end_seconds > video_clip.duration:
-                st.error("Start time and end time must be within the video duration.")
+                print("Start time and end time must be within the video duration.")
                 return None
             if start_seconds >= end_seconds:
-                st.error("Start time must be less than end time.")
+                print("Start time must be less than end time.")
                 return None
 
             video_segment = video_clip.subclip(start_seconds, end_seconds)
