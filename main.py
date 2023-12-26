@@ -34,6 +34,8 @@ def download_video(url, output_path, start_time, end_time, video_title, full_vid
 if __name__ == '__main__':
     st.title("YouTube Video Downloader")
 
+    full_video = st.checkbox('Download entire video without specifying timestamps')
+    
     default_start_time = time(0, 0)  # Default time interpreted as 0 minutes and 0 seconds
     default_end_time = time(0, 0)
     start_time = st.time_input("Start Time (Minutes:Seconds)", value=default_start_time)
@@ -41,8 +43,6 @@ if __name__ == '__main__':
     
     video_title = st.text_input('Video Title')
     url = st.text_input('YouTube URL')
-
-    full_video = st.checkbox('Download entire video without specifying timestamps')
 
     if url and video_title:
         output_path = 'videos' 
