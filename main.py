@@ -2,41 +2,56 @@ import os
 import pytube
 import streamlit as st
 from moviepy.editor import VideoFileClip
-from datetime import time
+from datetime import time, timedelta
 
-def download_video(url, output_path, start_time, end_time, video_title):
+## pip install -r requirements.txt
+## streamlit run main.py
+
+def download_video(url, output_path, start_time=None, end_time=None, video_title=None):
     yt = pytube.YouTube(url)
     video = yt.streams.get_highest_resolution()
-    temp_output_file = os.path.join(output_path, video.default_filename)
-    video.download(output_path=output_path) 
+    
+    if video_title is None:
+        video_title = yt.title
+    final_output_filename = f"{video_title}.mp4"
+    final_output_file = os.path.join(output_path, final_output_filename)
 
-    # Convert time objects to seconds (treating hours as minutes and minutes as seconds)
-    start_seconds = start_time.hour * 60 + start_time.minute
-    end_seconds = end_time.hour * 60 + end_time.minute
+    if start_time is not None and end_time is not None:
+        temp_output_file = os.path.join(output_path, video.default_filename)
+        video.download(output_path=output_path) 
 
-    # Cut the video
-    with VideoFileClip(temp_output_file) as video_clip:
-        video_segment = video_clip.subclip(start_seconds, end_seconds)
-        final_output_filename = f"{video_title}.mp4"
-        final_output_file = os.path.join(output_path, final_output_filename)
-        video_segment.write_videofile(final_output_file, codec="libx264", audio_codec="aac")
+        # Convert time objects to seconds
+        start_seconds = start_time.hour * 3600 + start_time.minute * 60 + start_time.second
+        end_seconds = end_time.hour * 3600 + end_time.minute * 60 + end_time.second
 
-    os.remove(temp_output_file)  # Remove the original, full-length video
+        # Cut the video
+        with VideoFileClip(temp_output_file) as video_clip:
+            video_segment = video_clip.subclip(start_seconds, end_seconds)
+            video_segment.write_videofile(final_output_file, codec="libx264", audio_codec="aac")
+
+        os.remove(temp_output_file)  # Remove the original, full-length video
+    else:
+        video.download(filename=final_output_filename, output_path=output_path) 
+
     return final_output_file
 
 if __name__ == '__main__':
     st.title("YouTube Video Downloader")
 
-    default_start_time = time(0, 0)  # Default time interpreted as 0 minutes and 0 seconds
-    default_end_time = time(0, 0)
-    start_time = st.time_input("Start Time (Minutes:Seconds)", value=default_start_time)
-    end_time = st.time_input("End Time (Minutes:Seconds)", value=default_end_time)
-    
-    video_title = st.text_input('Video Title')
-
     url = st.text_input('YouTube URL')
+    use_timestamps = st.checkbox('Specify Timestamps')
 
-    if url and start_time and end_time and video_title:
+    start_time = end_time = None
+    video_title = None
+
+    if use_timestamps:
+        default_start_time = time(0, 0)  # Default time interpreted as 0 hours, minutes, and seconds
+        default_end_time = time(0, 0)
+        start_time = st.time_input("Start Time (HH:MM:SS)", value=default_start_time)
+        end_time = st.time_input("End Time (HH:MM:SS)", value=default_end_time)
+        video_title = st.text_input('Video Title (optional)')
+
+    if url and (not use_timestamps or (start_time and end_time)):
         output_path = 'videos' 
         os.makedirs(output_path, exist_ok=True)
         filepath = download_video(url, output_path, start_time, end_time, video_title)
