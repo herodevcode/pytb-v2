@@ -3,6 +3,7 @@ import pytube
 import streamlit as st
 from moviepy.editor import VideoFileClip
 from datetime import time
+from time import sleep  # Import sleep from the time module
 
 def download_video(url, output_path, start_time, end_time, video_title, full_video=False):
     yt = pytube.YouTube(url)
@@ -47,7 +48,11 @@ if __name__ == '__main__':
     if url and video_title:
         output_path = 'videos' 
         os.makedirs(output_path, exist_ok=True)
-        filepath = download_video(url, output_path, start_time, end_time, video_title, full_video=full_video)
+        with st.status("Downloading data...", expanded=True) as status:
+            filepath = download_video(url, output_path, start_time, end_time, video_title, full_video=full_video)
+            st.write("Download finished...")
+            sleep(1)
+            status.update(label="Download complete!", state="complete", expanded=False)
         with open(filepath, 'rb') as f:
             st.download_button(
                 label='Download video',
