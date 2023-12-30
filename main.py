@@ -48,7 +48,8 @@ if __name__ == '__main__':
     if url and video_title:
         output_path = 'videos' 
         os.makedirs(output_path, exist_ok=True)
-        with st.status("Downloading data...", expanded=True) as status:
+        with st.status("Processing...", expanded=True) as status:
+            st.write("Downloading video...")
             filepath = download_video(url, output_path, start_time, end_time, video_title, full_video=full_video)
             st.write("Download finished...")
             sleep(1)
