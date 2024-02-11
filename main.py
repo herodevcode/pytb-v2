@@ -37,7 +37,7 @@ if __name__ == '__main__':
     full_video = st.checkbox('Download entire video without specifying timestamps')
 
     # Use numeric inputs for minutes and seconds
-    col1, col2, col3, col4 = st.columns(2)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         start_minutes = st.number_input("Start Minutes", min_value=0, max_value=99, value=0)
     with col2:
