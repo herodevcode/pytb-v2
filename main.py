@@ -41,9 +41,9 @@ if __name__ == '__main__':
     with col1:
         start_minutes = st.number_input("Start Minutes", min_value=0, max_value=99, value=0)
     with col2:
-        end_minutes = st.number_input("End Minutes", min_value=0, max_value=99, value=0)
-    with col3:
         start_seconds = st.number_input("Start Seconds", min_value=0, max_value=59, value=0)
+    with col3:
+        end_minutes = st.number_input("End Minutes", min_value=0, max_value=99, value=0)
     with col4:
         end_seconds = st.number_input("End Seconds", min_value=0, max_value=59, value=0)
 
